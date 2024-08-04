@@ -2,7 +2,7 @@
 //!
 //! `sea_query_common_like` is a collection of utilities to enhance `sea_query`
 //! with typical `LIKE` search support, including escape sequences for patterns
-//! (`%fuzzy%`, `%prefix`, `suffix%`) and multi-column fuzzy search.
+//! (`%fuzzy%`, `prefix%`, `%suffix`) and multi-column fuzzy search.
 
 use fancy_regex::Regex as FancyRegex;
 use regex::Regex;
