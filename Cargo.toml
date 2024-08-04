@@ -17,6 +17,6 @@ regex = "1"
 sea-query = "0.30"
 
 [dev-dependencies]
+sqlformat = "0.2.4"
 sqlx = "0.7"
 sqlx-postgres = "0.7"
-sqlformat = "0.2.4"
