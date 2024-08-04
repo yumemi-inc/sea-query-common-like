@@ -1,0 +1,40 @@
+name: "Test"
+
+on: [push]
+
+jobs:
+  rust-test:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Rust stable toolchain
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt
+      - name: Restore cache
+        uses: Swatinem/rust-cache@v2
+      - name: Check test
+        run: cargo +nightly test
+
+  rust-lint:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Rust stable toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - name: Install cargo-sort
+        run: cargo install cargo-sort
+      - name: Setup nightly cargo fmt
+        run: rustup toolchain install nightly --component rustfmt
+      - name: Restore cache
+        uses: Swatinem/rust-cache@v2
+      - name: Check format
+        run: cargo +nightly fmt --all -- --check
+      - name: Check clippy
+        run: cargo clippy -- -D warnings
+      - name: Check sort
+        run: cargo sort -w -c
