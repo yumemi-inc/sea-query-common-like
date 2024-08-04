@@ -1,0 +1,22 @@
+[package]
+name = "sea-query-common-like"
+version = "0.1.0"
+authors = ["mpyw <mpyw628@gmail.com>"]
+edition = "2021"
+rust-version = "1.80.0"
+description = "A Rust crate for enhancing sea_query with typical LIKE search support, including escape sequences for patterns (%fuzzy%, %prefix, suffix%) and multi-column fuzzy search."
+repository = "https://github.com/yumemi-inc/sea-query-common-like"
+license = "MIT"
+include = ["/src", "LICENSE"]
+keywords = ["sea_query", "sql", "database", "LIKE", "search"]
+categories = ["database", "web-programming"]
+
+[dependencies]
+fancy-regex = "0.13"
+regex = "1"
+sea-query = "0.30"
+
+[dev-dependencies]
+sqlx = "0.7"
+sqlx-postgres = "0.7"
+sqlformat = "0.2.4"
