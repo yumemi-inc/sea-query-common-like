@@ -1,0 +1,23 @@
+{
+  "extends": [
+    "config:base"
+  ],
+  "packageRules": [
+    {
+      "matchManagers": ["cargo"],
+      "matchPackagePatterns": ["*"],
+      "enabled": true
+    }
+  ],
+  "automerge": true,
+  "automergeType": "pr",
+  "schedule": [
+    {
+      "interval": "weekly",
+      "time": "before 5am",
+      "day": "monday",
+      "timezone": "Asia/Tokyo"
+    }
+  ],
+  "labels": ["dependencies", "automerge"]
+}
