@@ -6,12 +6,21 @@ jobs:
   rust-test:
     timeout-minutes: 10
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        sea-query: ["0.30", "0.31"]
+        sqlx: ["0.7", "0.8"]
     steps:
       - uses: actions/checkout@v4
       - name: Setup Rust stable toolchain
         uses: dtolnay/rust-toolchain@nightly
         with:
           components: rustfmt
+      - name: Update dependencies
+        run: |
+          cargo add sea-query@${{ matrix.sea-query }}
+          cargo add --dev sqlx@${{ matrix.sqlx }}
+          cargo add --dev sqlx-postgres@${{ matrix.sqlx }}
       - name: Restore cache
         uses: Swatinem/rust-cache@v2
       - name: Check test
