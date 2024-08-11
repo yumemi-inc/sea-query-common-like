@@ -1,6 +1,6 @@
 [package]
 name = "sea-query-common-like"
-version = "0.1.4"
+version = "0.1.5-rc.1"
 authors = ["mpyw <mpyw628@gmail.com>"]
 edition = "2021"
 rust-version = "1.80.0"
@@ -14,10 +14,10 @@ categories = ["database", "web-programming"]
 [dependencies]
 fancy-regex = { version = "0.13", default-features = false }
 regex = { version = "1", default-features = false, features = ["unicode-gencat"] }
-sea-query = { version = ">=0.30, <0.32", default-features = false }
+sea-query = { version = ">=0.30, <=0.32.0-rc.1", default-features = false }
 
 [dev-dependencies]
-sea-query = ">=0.30, <0.32"
+sea-query = ">=0.30, <=0.32.0-rc.1"
 sqlformat = "0.2.4"
 sqlx = ">=0.7, <0.9"
 sqlx-postgres = ">=0.7, <0.9"
