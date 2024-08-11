@@ -8,8 +8,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        sea-query: ["0.30", "0.31"]
+        sea-query: ["0.30", "0.31", "0.32.0-rc.1"]
         sqlx: ["0.7", "0.8"]
+        exclude:
+          - sea-query: "0.32.0-rc.1"
+            sqlx: "0.7"
     steps:
       - uses: actions/checkout@v4
       - name: Setup Rust stable toolchain
