@@ -23,6 +23,10 @@ jobs:
           cargo add --dev sqlx-postgres@${{ matrix.sqlx }}
       - name: Restore cache
         uses: Swatinem/rust-cache@v2
+      - name: Check code (dependencies only)
+        run: cargo +nightly check
+      - name: Check code (with dev-dependencies)
+        run: cargo +nightly check --all-targets
       - name: Check test
         run: cargo +nightly test
 
