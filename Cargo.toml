@@ -13,7 +13,7 @@ categories = ["database", "web-programming"]
 
 [dependencies]
 fancy-regex = { version = "0.13", default-features = false }
-regex = { version = "1", features = ["unicode-gencat"] }
+regex = { version = "1", default-features = false, features = ["unicode-gencat"] }
 sea-query = { version = ">=0.30, <0.32", default-features = false }
 
 [dev-dependencies]
