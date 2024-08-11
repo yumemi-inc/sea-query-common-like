@@ -1,6 +1,6 @@
 [package]
 name = "sea-query-common-like"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["mpyw <mpyw628@gmail.com>"]
 edition = "2021"
 rust-version = "1.80.0"
@@ -14,9 +14,9 @@ categories = ["database", "web-programming"]
 [dependencies]
 fancy-regex = "0.13"
 regex = "1"
-sea-query = "0.30"
+sea-query = ">=0.30, <0.32"
 
 [dev-dependencies]
 sqlformat = "0.2.4"
-sqlx = "0.7"
-sqlx-postgres = "0.7"
+sqlx = ">=0.7, <0.9"
+sqlx-postgres = ">=0.7, <0.9"
