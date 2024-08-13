@@ -1,6 +1,6 @@
 //! # Sea Query Common Like
 //!
-//! `sea_query_common_like` is a collection of utilities to enhance `sea_query`
+//! `sea_query_common_like` is a collection of utilities to enhance [`sea_query`]
 //! with typical `LIKE` search support, including escape sequences for patterns
 //! (`%fuzzy%`, `prefix%`, `%suffix`) and multi-column fuzzy search.
 
@@ -26,7 +26,7 @@ enum KeywordType {
     Fuzzy,
 }
 
-/// A collection of keywords for complex `LIKE` search conditions.
+/// A collection of [`Keyword`] for complex `LIKE` search conditions.
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Keywords(Vec<Keyword>);
 
@@ -40,7 +40,7 @@ static ESCAPE_REGEX: LazyLock<FancyRegex> =
 // Regular expression to split input text into keywords based on whitespace.
 static SEPARATOR_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\p{Zs}++").unwrap());
 
-/// Create a prefix keyword for `LIKE` search.
+/// Create a prefix [`Keyword`] for `LIKE` search.
 ///
 /// # Examples
 ///
@@ -106,7 +106,7 @@ pub fn prefix<T: Into<String>>(text: T) -> Keyword {
     }
 }
 
-/// Create a suffix keyword for `LIKE` search.
+/// Create a suffix [`Keyword`] for `LIKE` search.
 ///
 /// ```
 /// use sea_query::{Expr, Iden, IntoLikeExpr, LikeExpr, PostgresQueryBuilder, SelectStatement};
@@ -170,7 +170,7 @@ pub fn suffix<T: Into<String>>(text: T) -> Keyword {
     }
 }
 
-/// Create a fuzzy keyword for `LIKE` search.
+/// Create a fuzzy [`Keyword`] for `LIKE` search.
 ///
 /// # Examples
 ///
@@ -236,7 +236,7 @@ pub fn fuzzy<T: Into<String>>(text: T) -> Keyword {
     }
 }
 
-/// Split a single string by whitespace and create a collection of fuzzy keywords.
+/// Split a single [`String`] by whitespace and create fuzzy [`Keywords`].
 ///
 /// # Examples
 ///
@@ -316,7 +316,7 @@ pub fn fuzzy_separated<T: Into<String>>(text: T) -> Keywords {
     )
 }
 
-/// Create a collection of keywords for complex `LIKE` search conditions.
+/// Collect [`Keyword`] into [`Keywords`] for complex `LIKE` search conditions.
 ///
 /// # Examples
 ///
@@ -393,21 +393,21 @@ fn escape_like_value(input: &str) -> String {
         .to_string()
 }
 
-/// Default conversion from `String` to fuzzy Keyword.
+/// Default conversion from [`String`] to fuzzy [`Keyword`].
 impl From<String> for Keyword {
     fn from(value: String) -> Self {
         fuzzy(value)
     }
 }
 
-/// Default conversion from `&str` to fuzzy Keyword.
+/// Default conversion from `&str` to fuzzy [`Keyword`].
 impl From<&str> for Keyword {
     fn from(value: &str) -> Self {
         Self::from(value.to_string())
     }
 }
 
-/// Implement the conversion from Keyword to `sea_query::LikeExpr` for use in `sea_query`.
+/// Implement the conversion from [`Keyword`] to [`sea_query::LikeExpr`] for use in [`sea_query`].
 impl IntoLikeExpr for Keyword {
     fn into_like_expr(self) -> LikeExpr {
         LikeExpr::new(match self.ty {
@@ -419,14 +419,14 @@ impl IntoLikeExpr for Keyword {
     }
 }
 
-/// Methods for converting `Keyword` into `sea_query::Condition` for a single or multiple columns.
+/// Methods for converting [`Keyword`] into [`sea_query::Condition`] for a single or multiple columns.
 impl Keyword {
-    /// Generate a `Condition` for a single column with the `LIKE` pattern.
+    /// Generate a [`Condition`] for a single column with the `LIKE` pattern.
     pub fn into_condition_for_column<T: IntoColumnRef>(self, column: T) -> Condition {
         self.into_condition_for_columns([column])
     }
 
-    /// Generate a `Condition` for multiple columns with the `LIKE` pattern.
+    /// Generate a [`Condition`] for multiple columns with the `LIKE` pattern.
     pub fn into_condition_for_columns<T: IntoColumnRef, Iter: IntoIterator<Item = T>>(
         self,
         columns: Iter,
@@ -438,14 +438,14 @@ impl Keyword {
     }
 }
 
-/// Methods for converting `Keywords` into `sea_query::Condition` for a single or multiple columns.
+/// Methods for converting [`Keywords`] into [`sea_query::Condition`] for a single or multiple columns.
 impl Keywords {
-    /// Generate a `Condition` for a single column with multiple `LIKE` patterns.
+    /// Generate a [`Condition`] for a single column with multiple `LIKE` patterns.
     pub fn into_condition_for_column<T: IntoColumnRef + Clone>(self, column: T) -> Condition {
         self.into_condition_for_columns([column])
     }
 
-    /// Generate a `Condition` for multiple columns with multiple `LIKE` patterns.
+    /// Generate a [`Condition`] for multiple columns with multiple `LIKE` patterns.
     pub fn into_condition_for_columns<T: IntoColumnRef + Clone, Iter: IntoIterator<Item = T>>(
         self,
         columns: Iter,
