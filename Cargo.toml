@@ -1,6 +1,6 @@
 [package]
 name = "sea-query-common-like"
-version = "1.0.0"
+version = "1.1.0-rc.1"
 authors = ["mpyw <mpyw628@gmail.com>"]
 edition = "2021"
 rust-version = "1.80.0"
@@ -18,8 +18,8 @@ sea-orm = { version = ">=1.0, <1.1", default-features = false, optional = true }
 sea-query = { version = ">=0.31, <0.32", default-features = false }
 
 [dev-dependencies]
-sea-orm = { version = ">=1.0, <1.1", features = ["macros"] }
-sea-query = ">=0.31, <0.32"
+sea-orm = { version = ">=1.0, <=1.1.0-rc.1", features = ["macros"] }
+sea-query = ">=0.31, <=0.32.0-rc.1"
 sqlformat = "0.2.4"
 sqlx = ">=0.7, <0.9"
 sqlx-postgres = ">=0.7, <0.9"

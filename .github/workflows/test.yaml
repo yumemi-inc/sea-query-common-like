@@ -14,6 +14,7 @@ jobs:
       matrix:
         sea:
           - { sea-orm: "1.0", sea-query: "0.31" }
+          - { sea-orm: "1.1.0-rc.1", sea-query: "0.32.0-rc.1" }
         use-sea-orm:
           - true
           - false
@@ -24,6 +25,8 @@ jobs:
           - sea: { sea-orm: "1.0", sea-query: "0.31" }
             use-sea-orm: true
             sqlx: "0.8"
+          - sea: { sea-orm: "1.1.0-rc.1", sea-query: "0.32.0-rc.1" }
+            sqlx: "0.7"
     steps:
       - uses: actions/checkout@v4
       - name: Setup Rust stable toolchain
