@@ -2,33 +2,87 @@ name: "Test"
 
 on: [push]
 
+defaults:
+  run:
+    shell: bash -euo pipefail {0}
+
 jobs:
   rust-test:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        sea-query: ["0.30", "0.31"]
-        sqlx: ["0.7", "0.8"]
+        sea:
+          - { sea-orm: "1.0", sea-query: "0.31" }
+        use-sea-orm:
+          - true
+          - false
+        sqlx:
+          - "0.7"
+          - "0.8"
+        exclude:
+          - sea: { sea-orm: "1.0", sea-query: "0.31" }
+            use-sea-orm: true
+            sqlx: "0.8"
     steps:
       - uses: actions/checkout@v4
       - name: Setup Rust stable toolchain
         uses: dtolnay/rust-toolchain@nightly
         with:
           components: rustfmt
+      - name: Install Coverage Tools
+        if: ${{ matrix.use-sea-orm }}
+        run: |
+          rustup component add llvm-tools-preview --toolchain nightly
+          cargo +nightly install cargo-llvm-cov
       - name: Update dependencies
         run: |
-          cargo add sea-query@${{ matrix.sea-query }}
-          cargo add --dev sqlx@${{ matrix.sqlx }}
-          cargo add --dev sqlx-postgres@${{ matrix.sqlx }}
+          cargo remove sea-orm sea-query
+          cargo remove --dev sea-orm sea-query sqlx sqlx-postgres
+          cargo add sea-query@${{ matrix.sea.sea-query }} --no-default-features
+          cargo add --dev sea-query@${{ matrix.sea.sea-query }}
+          if [ "${{ matrix.use-sea-orm }}" == "true" ]; then
+            cargo add sea-orm@${{ matrix.sea.sea-orm }} --no-default-features --optional
+            cargo add --dev sea-orm@${{ matrix.sea.sea-orm }} --features macros
+          fi
+          cargo add --dev sqlx@${{ matrix.sqlx }} sqlx-postgres@${{ matrix.sqlx }}
+          cat << EOF >> "$GITHUB_STEP_SUMMARY"
+          ## \`Cargo.toml\`
+          \`\`\`toml
+          $(cat Cargo.toml)
+          \`\`\`
+          EOF
+      - name: Generate feature flags
+        id: generate-flags
+        run: |
+          if [ "${{ matrix.use-sea-orm }}" == "true" ]; then
+            echo "feature_flags=--all-features" >> "$GITHUB_OUTPUT"
+          else
+            echo "feature_flags=" >> "$GITHUB_OUTPUT"
+          fi
       - name: Restore cache
         uses: Swatinem/rust-cache@v2
       - name: Check code (dependencies only)
-        run: cargo +nightly check
+        run: cargo +nightly check ${{ steps.generate-flags.outputs.feature_flags }}
       - name: Check code (with dev-dependencies)
-        run: cargo +nightly check --all-targets
+        run: cargo +nightly check --all-targets ${{ steps.generate-flags.outputs.feature_flags }}
       - name: Check test
-        run: cargo +nightly test
+        run: |
+          if [ "${{ matrix.use-sea-orm }}" == "true" ]; then
+            cargo +nightly llvm-cov ${{ steps.generate-flags.outputs.feature_flags }} --doctests --lcov >> /tmp/coverage.lcov
+          else
+            cargo test ${{ steps.generate-flags.outputs.feature_flags }}
+          fi
+      - name: Coveralls Parallel
+        if: ${{ matrix.use-sea-orm }}
+        uses: coverallsapp/github-action@v2
+        with:
+          files: /tmp/coverage.lcov
+          flag-name: >-
+            sea-orm:${{ matrix.sea.sea-orm }}
+            sea-query:${{ matrix.sea.sea-query }}
+            sqlx:${{ matrix.sqlx }}
+          parallel: true
 
   rust-lint:
     timeout-minutes: 10
@@ -48,6 +102,16 @@ jobs:
       - name: Check format
         run: cargo +nightly fmt --all -- --check
       - name: Check clippy
-        run: cargo clippy -- -D warnings
+        run: cargo clippy --all-features -- -D warnings
       - name: Check sort
         run: cargo sort -w -c
+
+  aggregate-coverages:
+    needs: rust-test
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Coveralls Finished
+        uses: coverallsapp/github-action@v2
+        with:
+          parallel-finished: true

@@ -4,10 +4,15 @@
 //! with typical `LIKE` search support, including escape sequences for patterns
 //! (`%fuzzy%`, `prefix%`, `%suffix`) and multi-column fuzzy search.
 
+#![cfg_attr(docsrs, feature(doc_cfg))]
+
 use fancy_regex::Regex as FancyRegex;
 use regex::Regex;
 use sea_query::{Cond, Condition, Expr, IntoColumnRef, IntoLikeExpr, LikeExpr};
 use std::sync::LazyLock;
+
+#[cfg(feature = "with-sea-orm")]
+use sea_orm::ColumnTrait;
 
 /// Represents a keyword used for `LIKE` search with different matching types.
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -99,6 +104,10 @@ static SEPARATOR_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\p{Zs}++
 ///     ),
 /// );
 /// ```
+///
+/// # Examples (`with-sea-orm`)
+///
+/// See [`fuzzy_separated`] examples.
 pub fn prefix<T: Into<String>>(text: T) -> Keyword {
     Keyword {
         ty: KeywordType::Prefix,
@@ -163,6 +172,10 @@ pub fn prefix<T: Into<String>>(text: T) -> Keyword {
 ///     ),
 /// );
 /// ```
+///
+/// # Examples (`with-sea-orm`)
+///
+/// See [`fuzzy_separated`] examples.
 pub fn suffix<T: Into<String>>(text: T) -> Keyword {
     Keyword {
         ty: KeywordType::Suffix,
@@ -229,6 +242,10 @@ pub fn suffix<T: Into<String>>(text: T) -> Keyword {
 ///     ),
 /// );
 /// ```
+///
+/// # Examples (`with-sea-orm`)
+///
+/// See [`fuzzy_separated`] examples.
 pub fn fuzzy<T: Into<String>>(text: T) -> Keyword {
     Keyword {
         ty: KeywordType::Fuzzy,
@@ -300,6 +317,83 @@ pub fn fuzzy<T: Into<String>>(text: T) -> Keyword {
 ///                     OR "author" LIKE '%Edison%' ESCAPE '!'
 ///                 )
 ///                 AND "deleted_at" IS NULL
+///         "#,
+///         &QueryParams::default(),
+///         FormatOptions::default(),
+///     ),
+/// );
+/// ```
+///
+/// # Examples (`with-sea-orm`)
+///
+/// ```
+/// use sea_query::all;
+/// use sea_query_common_like::fuzzy_separated;
+/// use sqlformat::{format, FormatOptions, QueryParams};
+///
+/// #[cfg(feature = "with-sea-orm")]
+/// use sea_orm::{ColumnTrait, DbBackend, EntityTrait, QueryFilter, QueryTrait};
+///
+/// #[cfg(feature = "with-sea-orm")]
+/// mod book {
+///     use sea_orm::entity::prelude::*;
+///
+///     #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+///     #[sea_orm(schema_name = "book", table_name = "books")]
+///     pub struct Model {
+///         #[sea_orm(primary_key, auto_increment = false)]
+///         pub id: Uuid,
+///         #[sea_orm(column_type = "Text")]
+///         pub title: String,
+///         #[sea_orm(column_type = "Text")]
+///         pub author: String,
+///         pub deleted_at: Option<DateTimeWithTimeZone>,
+///     }
+///
+///     #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+///     pub enum Relation {
+///     }
+///
+///     impl ActiveModelBehavior for ActiveModel {}
+/// }
+///
+/// #[cfg(feature = "with-sea-orm")]
+/// assert_eq!(
+///     format(
+///         book::Entity::find()
+///             .filter(all![
+///                 fuzzy_separated("1% 99% Edison").into_condition_for_orm_columns([book::Column::Title, book::Column::Author]),
+///                 book::Column::DeletedAt.is_null(),
+///             ])
+///             .build(DbBackend::Postgres)
+///             .to_string()
+///             .as_str(),
+///         &QueryParams::default(),
+///         FormatOptions::default(),
+///     ),
+///     format(
+///         r#"
+///             SELECT
+///                 "books"."id",
+///                 "books"."title",
+///                 "books"."author",
+///                 "books"."deleted_at"
+///             FROM
+///                 "book"."books"
+///             WHERE
+///                 (
+///                     "books"."title" LIKE '%1!%%' ESCAPE '!'
+///                     OR "books"."author" LIKE '%1!%%' ESCAPE '!'
+///                 )
+///                 AND (
+///                     "books"."title" LIKE '%99!%%' ESCAPE '!'
+///                     OR "books"."author" LIKE '%99!%%' ESCAPE '!'
+///                 )
+///                 AND (
+///                     "books"."title" LIKE '%Edison%' ESCAPE '!'
+///                     OR "books"."author" LIKE '%Edison%' ESCAPE '!'
+///                 )
+///                 AND "books"."deleted_at" IS NULL
 ///         "#,
 ///         &QueryParams::default(),
 ///         FormatOptions::default(),
@@ -382,11 +476,16 @@ pub fn fuzzy_separated<T: Into<String>>(text: T) -> Keywords {
 ///     ),
 /// );
 /// ```
+///
+/// # Examples (`with-sea-orm`)
+///
+/// See [`fuzzy_separated`] examples.
 pub fn keywords<T: Into<Keyword>, Iter: IntoIterator<Item = T>>(texts: Iter) -> Keywords {
     Keywords(texts.into_iter().map(Into::into).collect())
 }
 
 // Escape special characters in a `LIKE` search pattern.
+#[inline(always)]
 fn escape_like_value(input: &str) -> String {
     ESCAPE_REGEX
         .replace_all(input, ESCAPE_CHAR.to_string())
@@ -395,6 +494,7 @@ fn escape_like_value(input: &str) -> String {
 
 /// Default conversion from [`String`] to fuzzy [`Keyword`].
 impl From<String> for Keyword {
+    #[inline]
     fn from(value: String) -> Self {
         fuzzy(value)
     }
@@ -402,8 +502,9 @@ impl From<String> for Keyword {
 
 /// Default conversion from `&str` to fuzzy [`Keyword`].
 impl From<&str> for Keyword {
+    #[inline]
     fn from(value: &str) -> Self {
-        Self::from(value.to_string())
+        fuzzy(value.to_string())
     }
 }
 
@@ -422,6 +523,7 @@ impl IntoLikeExpr for Keyword {
 /// Methods for converting [`Keyword`] into [`sea_query::Condition`] for a single or multiple columns.
 impl Keyword {
     /// Generate a [`Condition`] for a single column with the `LIKE` pattern.
+    #[inline]
     pub fn into_condition_for_column<T: IntoColumnRef>(self, column: T) -> Condition {
         self.into_condition_for_columns([column])
     }
@@ -436,11 +538,35 @@ impl Keyword {
             .map(|col| Expr::col(col).like(self.clone()))
             .fold(Cond::all(), Cond::add)
     }
+
+    /// Generate a [`Condition`] for a single column with the `LIKE` pattern using a fully-qualified column name with `sea-orm`.
+    #[cfg(feature = "with-sea-orm")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "with-sea-orm")))]
+    #[inline]
+    pub fn into_condition_for_orm_column<C>(self, column: C) -> Condition
+    where
+        C: ColumnTrait,
+    {
+        self.into_condition_for_orm_columns([column])
+    }
+
+    /// Generate a [`Condition`] for multiple columns with the `LIKE` pattern using fully-qualified column names with `sea-orm`.
+    #[cfg(feature = "with-sea-orm")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "with-sea-orm")))]
+    #[inline]
+    pub fn into_condition_for_orm_columns<C, Iter>(self, columns: Iter) -> Condition
+    where
+        C: ColumnTrait,
+        Iter: IntoIterator<Item = C>,
+    {
+        self.into_condition_for_columns(columns.into_iter().map(|col| col.as_column_ref()))
+    }
 }
 
 /// Methods for converting [`Keywords`] into [`sea_query::Condition`] for a single or multiple columns.
 impl Keywords {
     /// Generate a [`Condition`] for a single column with multiple `LIKE` patterns.
+    #[inline]
     pub fn into_condition_for_column<T: IntoColumnRef + Clone>(self, column: T) -> Condition {
         self.into_condition_for_columns([column])
     }
@@ -460,5 +586,28 @@ impl Keywords {
                     .fold(Cond::any(), Cond::add)
             })
             .fold(Cond::all(), Cond::add)
+    }
+
+    /// Generate a [`Condition`] for a single column with multiple `LIKE` patterns using a fully-qualified column name with `sea-orm`.
+    #[cfg(feature = "with-sea-orm")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "with-sea-orm")))]
+    #[inline]
+    pub fn into_condition_for_orm_column<C>(self, column: C) -> Condition
+    where
+        C: ColumnTrait,
+    {
+        self.into_condition_for_orm_columns([column])
+    }
+
+    /// Generate a [`Condition`] for multiple columns with multiple `LIKE` patterns using fully-qualified column names with `sea-orm`.
+    #[cfg(feature = "with-sea-orm")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "with-sea-orm")))]
+    #[inline]
+    pub fn into_condition_for_orm_columns<C, Iter>(self, columns: Iter) -> Condition
+    where
+        C: ColumnTrait,
+        Iter: IntoIterator<Item = C>,
+    {
+        self.into_condition_for_columns(columns.into_iter().map(|col| col.as_column_ref()))
     }
 }
