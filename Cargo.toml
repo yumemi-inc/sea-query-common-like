@@ -1,6 +1,6 @@
 [package]
 name = "sea-query-common-like"
-version = "0.1.4"
+version = "1.0.0"
 authors = ["mpyw <mpyw628@gmail.com>"]
 edition = "2021"
 rust-version = "1.80.0"
@@ -8,16 +8,26 @@ description = "A Rust crate for enhancing sea_query with typical LIKE search sup
 repository = "https://github.com/yumemi-inc/sea-query-common-like"
 license = "MIT"
 include = ["/src", "LICENSE"]
-keywords = ["sea_query", "sql", "database", "LIKE", "search"]
+keywords = ["sea-orm", "sea-query", "sql", "LIKE", "search"]
 categories = ["database", "web-programming"]
 
 [dependencies]
 fancy-regex = { version = "0.13", default-features = false }
 regex = { version = "1", default-features = false, features = ["unicode-gencat"] }
-sea-query = { version = ">=0.30, <0.32", default-features = false }
+sea-orm = { version = ">=1.0, <1.1", default-features = false, optional = true }
+sea-query = { version = ">=0.31, <0.32", default-features = false }
 
 [dev-dependencies]
-sea-query = ">=0.30, <0.32"
+sea-orm = { version = ">=1.0, <1.1", features = ["macros"] }
+sea-query = ">=0.31, <0.32"
 sqlformat = "0.2.4"
 sqlx = ">=0.7, <0.9"
 sqlx-postgres = ">=0.7, <0.9"
+
+[features]
+default = []
+with-sea-orm = ["dep:sea-orm"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
