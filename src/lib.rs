@@ -544,7 +544,7 @@ impl Keyword {
             .fold(Cond::all(), Cond::add)
     }
 
-    /// Generate a [`Condition`] for a single column with the `LIKE` pattern using a fully-qualified column name with `sea-orm`.
+    /// Generate a [`Condition`] for a single column with the `LIKE` pattern using a fully-qualified column name with [`sea_orm`].
     #[cfg(feature = "with-sea-orm")]
     #[cfg_attr(docsrs, doc(cfg(feature = "with-sea-orm")))]
     #[inline]
@@ -552,7 +552,7 @@ impl Keyword {
         self.into_condition_for_orm_columns([column])
     }
 
-    /// Generate a [`Condition`] for multiple columns with the `LIKE` pattern using fully-qualified column names with `sea-orm`.
+    /// Generate a [`Condition`] for multiple columns with the `LIKE` pattern using fully-qualified column names with [`sea_orm`].
     #[cfg(feature = "with-sea-orm")]
     #[cfg_attr(docsrs, doc(cfg(feature = "with-sea-orm")))]
     #[inline]
@@ -591,7 +591,7 @@ impl Keywords {
             .fold(Cond::all(), Cond::add)
     }
 
-    /// Generate a [`Condition`] for a single column with multiple `LIKE` patterns using a fully-qualified column name with `sea-orm`.
+    /// Generate a [`Condition`] for a single column with multiple `LIKE` patterns using a fully-qualified column name with [`sea_orm`].
     #[cfg(feature = "with-sea-orm")]
     #[cfg_attr(docsrs, doc(cfg(feature = "with-sea-orm")))]
     #[inline]
@@ -599,7 +599,7 @@ impl Keywords {
         self.into_condition_for_orm_columns([column])
     }
 
-    /// Generate a [`Condition`] for multiple columns with multiple `LIKE` patterns using fully-qualified column names with `sea-orm`.
+    /// Generate a [`Condition`] for multiple columns with multiple `LIKE` patterns using fully-qualified column names with [`sea_orm`].
     #[cfg(feature = "with-sea-orm")]
     #[cfg_attr(docsrs, doc(cfg(feature = "with-sea-orm")))]
     #[inline]
