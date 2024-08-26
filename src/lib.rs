@@ -108,7 +108,7 @@ static SEPARATOR_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\p{Zs}++
 /// # Examples (`with-sea-orm`)
 ///
 /// See [`fuzzy_separated`] examples.
-pub fn prefix<T: Into<String>>(text: T) -> Keyword {
+pub fn prefix(text: impl Into<String>) -> Keyword {
     Keyword {
         ty: KeywordType::Prefix,
         value: text.into(),
@@ -176,7 +176,7 @@ pub fn prefix<T: Into<String>>(text: T) -> Keyword {
 /// # Examples (`with-sea-orm`)
 ///
 /// See [`fuzzy_separated`] examples.
-pub fn suffix<T: Into<String>>(text: T) -> Keyword {
+pub fn suffix(text: impl Into<String>) -> Keyword {
     Keyword {
         ty: KeywordType::Suffix,
         value: text.into(),
@@ -246,7 +246,7 @@ pub fn suffix<T: Into<String>>(text: T) -> Keyword {
 /// # Examples (`with-sea-orm`)
 ///
 /// See [`fuzzy_separated`] examples.
-pub fn fuzzy<T: Into<String>>(text: T) -> Keyword {
+pub fn fuzzy(text: impl Into<String>) -> Keyword {
     Keyword {
         ty: KeywordType::Fuzzy,
         value: text.into(),
@@ -400,7 +400,7 @@ pub fn fuzzy<T: Into<String>>(text: T) -> Keyword {
 ///     ),
 /// );
 /// ```
-pub fn fuzzy_separated<T: Into<String>>(text: T) -> Keywords {
+pub fn fuzzy_separated(text: impl Into<String>) -> Keywords {
     keywords(
         SEPARATOR_REGEX
             .split(&text.into())
@@ -480,7 +480,11 @@ pub fn fuzzy_separated<T: Into<String>>(text: T) -> Keywords {
 /// # Examples (`with-sea-orm`)
 ///
 /// See [`fuzzy_separated`] examples.
-pub fn keywords<T: Into<Keyword>, Iter: IntoIterator<Item = T>>(texts: Iter) -> Keywords {
+pub fn keywords<T, Iter>(texts: Iter) -> Keywords
+where
+    T: Into<Keyword>,
+    Iter: IntoIterator<Item = T>,
+{
     Keywords(texts.into_iter().map(Into::into).collect())
 }
 
@@ -524,15 +528,16 @@ impl IntoLikeExpr for Keyword {
 impl Keyword {
     /// Generate a [`Condition`] for a single column with the `LIKE` pattern.
     #[inline]
-    pub fn into_condition_for_column<T: IntoColumnRef>(self, column: T) -> Condition {
+    pub fn into_condition_for_column(self, column: impl IntoColumnRef) -> Condition {
         self.into_condition_for_columns([column])
     }
 
     /// Generate a [`Condition`] for multiple columns with the `LIKE` pattern.
-    pub fn into_condition_for_columns<T: IntoColumnRef, Iter: IntoIterator<Item = T>>(
-        self,
-        columns: Iter,
-    ) -> Condition {
+    pub fn into_condition_for_columns<C, Iter>(self, columns: Iter) -> Condition
+    where
+        C: IntoColumnRef,
+        Iter: IntoIterator<Item = C>,
+    {
         columns
             .into_iter()
             .map(|col| Expr::col(col).like(self.clone()))
@@ -543,10 +548,7 @@ impl Keyword {
     #[cfg(feature = "with-sea-orm")]
     #[cfg_attr(docsrs, doc(cfg(feature = "with-sea-orm")))]
     #[inline]
-    pub fn into_condition_for_orm_column<C>(self, column: C) -> Condition
-    where
-        C: ColumnTrait,
-    {
+    pub fn into_condition_for_orm_column(self, column: impl ColumnTrait) -> Condition {
         self.into_condition_for_orm_columns([column])
     }
 
@@ -567,15 +569,16 @@ impl Keyword {
 impl Keywords {
     /// Generate a [`Condition`] for a single column with multiple `LIKE` patterns.
     #[inline]
-    pub fn into_condition_for_column<T: IntoColumnRef + Clone>(self, column: T) -> Condition {
+    pub fn into_condition_for_column(self, column: impl IntoColumnRef + Clone) -> Condition {
         self.into_condition_for_columns([column])
     }
 
     /// Generate a [`Condition`] for multiple columns with multiple `LIKE` patterns.
-    pub fn into_condition_for_columns<T: IntoColumnRef + Clone, Iter: IntoIterator<Item = T>>(
-        self,
-        columns: Iter,
-    ) -> Condition {
+    pub fn into_condition_for_columns<C, Iter>(self, columns: Iter) -> Condition
+    where
+        C: IntoColumnRef + Clone,
+        Iter: IntoIterator<Item = C>,
+    {
         let columns = columns.into_iter().collect::<Vec<_>>();
         self.0
             .into_iter()
@@ -592,10 +595,7 @@ impl Keywords {
     #[cfg(feature = "with-sea-orm")]
     #[cfg_attr(docsrs, doc(cfg(feature = "with-sea-orm")))]
     #[inline]
-    pub fn into_condition_for_orm_column<C>(self, column: C) -> Condition
-    where
-        C: ColumnTrait,
-    {
+    pub fn into_condition_for_orm_column(self, column: impl ColumnTrait) -> Condition {
         self.into_condition_for_orm_columns([column])
     }
 
