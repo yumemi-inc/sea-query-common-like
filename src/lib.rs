@@ -85,7 +85,7 @@ static SEPARATOR_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\p{Zs}++
 ///             .to_string(PostgresQueryBuilder)
 ///             .as_str(),
 ///         &QueryParams::default(),
-///         FormatOptions::default(),
+///         &FormatOptions::default(),
 ///     ),
 ///     format(
 ///         r#"
@@ -100,7 +100,7 @@ static SEPARATOR_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\p{Zs}++
 ///                 AND "deleted_at" IS NULL
 ///         "#,
 ///         &QueryParams::default(),
-///         FormatOptions::default(),
+///         &FormatOptions::default(),
 ///     ),
 /// );
 /// ```
@@ -153,7 +153,7 @@ pub fn prefix(text: impl Into<String>) -> Keyword {
 ///             .to_string(PostgresQueryBuilder)
 ///             .as_str(),
 ///         &QueryParams::default(),
-///         FormatOptions::default(),
+///         &FormatOptions::default(),
 ///     ),
 ///     format(
 ///         r#"
@@ -168,7 +168,7 @@ pub fn prefix(text: impl Into<String>) -> Keyword {
 ///                 AND "deleted_at" IS NULL
 ///         "#,
 ///         &QueryParams::default(),
-///         FormatOptions::default(),
+///         &FormatOptions::default(),
 ///     ),
 /// );
 /// ```
@@ -223,7 +223,7 @@ pub fn suffix(text: impl Into<String>) -> Keyword {
 ///             .to_string(PostgresQueryBuilder)
 ///             .as_str(),
 ///         &QueryParams::default(),
-///         FormatOptions::default(),
+///         &FormatOptions::default(),
 ///     ),
 ///     format(
 ///         r#"
@@ -238,7 +238,7 @@ pub fn suffix(text: impl Into<String>) -> Keyword {
 ///                 AND "deleted_at" IS NULL
 ///         "#,
 ///         &QueryParams::default(),
-///         FormatOptions::default(),
+///         &FormatOptions::default(),
 ///     ),
 /// );
 /// ```
@@ -293,7 +293,7 @@ pub fn fuzzy(text: impl Into<String>) -> Keyword {
 ///             .to_string(PostgresQueryBuilder)
 ///             .as_str(),
 ///         &QueryParams::default(),
-///         FormatOptions::default(),
+///         &FormatOptions::default(),
 ///     ),
 ///     format(
 ///         r#"
@@ -319,7 +319,7 @@ pub fn fuzzy(text: impl Into<String>) -> Keyword {
 ///                 AND "deleted_at" IS NULL
 ///         "#,
 ///         &QueryParams::default(),
-///         FormatOptions::default(),
+///         &FormatOptions::default(),
 ///     ),
 /// );
 /// ```
@@ -369,7 +369,7 @@ pub fn fuzzy(text: impl Into<String>) -> Keyword {
 ///             .to_string()
 ///             .as_str(),
 ///         &QueryParams::default(),
-///         FormatOptions::default(),
+///         &FormatOptions::default(),
 ///     ),
 ///     format(
 ///         r#"
@@ -396,7 +396,7 @@ pub fn fuzzy(text: impl Into<String>) -> Keyword {
 ///                 AND "books"."deleted_at" IS NULL
 ///         "#,
 ///         &QueryParams::default(),
-///         FormatOptions::default(),
+///         &FormatOptions::default(),
 ///     ),
 /// );
 /// ```
@@ -450,7 +450,7 @@ pub fn fuzzy_separated(text: impl Into<String>) -> Keywords {
 ///             .to_string(PostgresQueryBuilder)
 ///             .as_str(),
 ///         &QueryParams::default(),
-///         FormatOptions::default(),
+///         &FormatOptions::default(),
 ///     ),
 ///     format(
 ///         r#"
@@ -472,7 +472,7 @@ pub fn fuzzy_separated(text: impl Into<String>) -> Keywords {
 ///                 AND "deleted_at" IS NULL
 ///         "#,
 ///         &QueryParams::default(),
-///         FormatOptions::default(),
+///         &FormatOptions::default(),
 ///     ),
 /// );
 /// ```
