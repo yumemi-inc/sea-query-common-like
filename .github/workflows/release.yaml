@@ -1,0 +1,22 @@
+name: "Release"
+
+on:
+  push:
+    tags:
+      - "v*"
+
+defaults:
+  run:
+    shell: bash -euo pipefail {0}
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yaml
+
+  release:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Release with release-plz
+        uses: release-plz/action@v0.5
